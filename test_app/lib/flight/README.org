@@ -1,0 +1,23 @@
+#+STARTUP: indent
+#+AUTHOR: ZhiCheng Lee
+#+TITLE: Flutter Flight Search Demo
+#+EMAIL: gccll.love@gmail.com
+#+KEYWORDS: Flutter Dart Search Flight
+#+OPTIONS: H:4 toc:t
+
+
+* 结构
+
+- AppBar and Top Buttons
+  导航和顶部按钮
+- Initial input
+- Airplane resize and travel
+- Dots travel
+- Flight stop card view
+- Flight stop card animations
+- Flight ticket view
+- Flight ticket animations
+* 开始
+
+- Create App
+- App Bar  

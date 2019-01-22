@@ -1,19 +1,17 @@
-import 'package:flutter/material.dart';
-//import './rows/my_row.dart';
-import './pages/home.dart';
-void main() => runApp(MyApp());
+import "package:flutter/material.dart";
+import "flight/homepage.dart";
+
+void main() => runApp(new MyApp());
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-
-    return MaterialApp(
-      title: 'Startup Name Generator',
-      home: Home(),
-      color: Colors.lightBlue,
-      debugShowCheckedModeBanner: false,
-      // home: RandomWords(),
+    return new MaterialApp(
+      title: 'Flight Search',
+      theme: new ThemeData(
+        primarySwatch: Colors.red,
+      ),
+      home: new HomePage(),
     );
   }
 }
