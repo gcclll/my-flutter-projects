@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import './multicity_input.dart';
+import './price_tab.dart';
 
 class ContentCard extends StatefulWidget {
   @override
@@ -6,6 +8,9 @@ class ContentCard extends StatefulWidget {
 }
 
 class _ContentCardState extends State<ContentCard> {
+
+  bool showInput = true;
+
   @override
   Widget build(BuildContext context) {
 
@@ -59,8 +64,12 @@ class _ContentCardState extends State<ContentCard> {
             minHeight: viewportConstaints.maxHeight - 48.0
           ),
           child: new IntrinsicHeight(
-            child: _buildMulticityTab(),
-          )
+            child: showInput
+                ? _buildMulticityTab()
+                : PriceTab(
+                    height: viewportConstaints.maxHeight - 48.0
+                  ),
+          ),
         ),
       ),
     );
@@ -69,14 +78,14 @@ class _ContentCardState extends State<ContentCard> {
   Widget _buildMulticityTab() {
     return Column(
       children: <Widget>[
-        Text('Inputs'),
+        MulticityInput(),
         Expanded(child: Container()),
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
           child: FloatingActionButton(
-            onPressed: () {},
+            onPressed: () => setState(() => showInput = false),
             child: Icon(Icons.timeline, size: 36.0),
-          )
+          ),
         ),
       ],
     );
