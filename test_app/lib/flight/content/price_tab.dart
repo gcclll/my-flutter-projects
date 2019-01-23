@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import './animated_plane_icon.dart';
+import './animated_plane_icon.dart';
 
 class PriceTab extends StatefulWidget {
 
@@ -14,26 +14,49 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
   final double _initialPlanePaddingBottom = 16.0;
   final double _minPlanePaddingTop = 16.0;
 
+  AnimationController _planeSizeAnimationController;
+  Animation _planeSizeAnimation;
+
   double get _planeTopPadding =>
       widget.height - _initialPlanePaddingBottom - _planeSize;
-  double get _planeSize => 60.0;
+  double get _planeSize => _planeSizeAnimation.value;
+
+  @override
+  void initState() {
+   super.initState();
+   _initSizeAnimations();
+   // 启动动画
+   _planeSizeAnimationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _planeSizeAnimationController.dispose();
+    super.dispose();
+  }
+
+  _initSizeAnimations() {
+
+    _planeSizeAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 340),
+      vsync: this
+    );
+
+    _planeSizeAnimation = Tween<double>(begin: 60.0, end: 36.0)
+      .animate(CurvedAnimation(
+        parent: _planeSizeAnimationController,
+        curve: Curves.easeOut,
+      ));
+  }
 
   Widget _buildPlane() {
     return Positioned(
       top: _planeTopPadding,
       child: Column(
         children: <Widget>[
-          _buildPlaneIcon()
+          AnimatedPlaneIcon(animation: _planeSizeAnimation),
         ],
       ),
-    );
-  }
-
-  Widget _buildPlaneIcon() {
-    return Icon(
-      Icons.airplanemode_active,
-      color: Colors.red,
-      size: _planeSize,
     );
   }
 
