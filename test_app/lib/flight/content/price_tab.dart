@@ -94,6 +94,11 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       child: Column(
         children: <Widget>[
           AnimatedPlaneIcon(animation: _planeSizeAnimation),
+          Container(
+            width: 2.0,
+            height: 240.0,
+            color: Color.fromARGB(255, 200, 200, 200),
+          ),
         ],
       ),
       builder: (context, child) => Positioned(
