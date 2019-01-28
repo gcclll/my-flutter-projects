@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './animated_plane_icon.dart';
+import './animated_dot.dart';
 
 class PriceTab extends StatefulWidget {
 
@@ -11,8 +12,16 @@ class PriceTab extends StatefulWidget {
 }
 
 class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
+
+  final List<int> _flightStops = [1, 2, 3, 4];
+  final double _cardHeight = 80.0;
+
   final double _initialPlanePaddingBottom = 32.0;
   final double _minPlanePaddingTop = 16.0;
+
+  // 点动画
+  AnimationController _dotsAnimationController;
+  List<Animation<double>> _dotPositions = [];
 
   // 飞机大小动画和控制器
   AnimationController _planeSizeAnimationController;
@@ -38,6 +47,8 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
    super.initState();
    _initPlaneSizeAnimations();
    _initPlaneTravelAnimations();
+   _initDotAnimationController();
+   _initDotAnimations();
    // 启动动画
    _planeSizeAnimationController.forward();
 //   _planeTravelController.forward();
@@ -47,6 +58,7 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
   void dispose() {
     _planeSizeAnimationController.dispose();
     _planeTravelController.dispose();
+    _dotsAnimationController.dispose();
     super.dispose();
   }
 
@@ -78,6 +90,10 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
          Duration(milliseconds: 500),
          () => _planeTravelController.forward()
        );
+       Future.delayed(
+         Duration(milliseconds: 700),
+         () => _dotsAnimationController.forward(),
+       );
       }
     });
 
@@ -88,6 +104,61 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       ));
   }
 
+  // 初始化点动画和控制器
+  void _initDotAnimations() {
+    // 两点之间动画间隔
+    final double slideDurationInterval = 0.4;
+    // 下一个点动画的启动延时
+    final double slideDelayInterval = 0.2;
+    // 线条上每个点的高度
+    final double _cardH = 0.8 * _cardHeight;
+    // 起始位置为屏幕底部
+    double startingMarginTop = widget.height;
+    // 与顶部的最小间隔，飞机顶部距离+飞机大小+加一半的card高度
+    double minMarginTop =
+        _minPlanePaddingTop + _planeSize + 0.5 * _cardH;
+
+    for (int i = 0; i < _flightStops.length; i++) {
+      // 开始时间
+      final start = slideDelayInterval * i;
+      // 结束时间 = 开始时间 + 动画时长
+      final end = start + slideDurationInterval;
+
+      double finalMarginTop = minMarginTop + i * _cardH;
+
+      Animation<double> animation = new Tween(
+        begin: startingMarginTop,
+        end: finalMarginTop,
+      ).animate(
+        new CurvedAnimation(
+          parent: _dotsAnimationController,
+          curve: new Interval(start, end, curve: Curves.easeOut)
+        ),
+      );
+
+      // 将动画保存到点动画数组中，里面包含了每个点动画的属性和状态值
+      _dotPositions.add(animation);
+    }
+  }
+  
+  void _initDotAnimationController() {
+    _dotsAnimationController = new AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500)
+    );
+  }
+
+  // 根据索引拿到动画点
+  Widget _mapFlightStopToDot(stop) {
+    int index = _flightStops.indexOf(stop);
+    bool isStartOrEnd = index == 0 || index == _flightStops.length - 1;
+    Color color = isStartOrEnd ? Colors.red : Colors.green;
+    return AnimatedDot(
+      animation: _dotPositions[index],
+      color: color
+    );
+  }
+
   Widget _buildPlane() {
     return AnimatedBuilder(
       animation: _planeTravelAnimation,
@@ -96,7 +167,8 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
           AnimatedPlaneIcon(animation: _planeSizeAnimation),
           Container(
             width: 2.0,
-            height: 240.0,
+            // 高度根据点的个数和其间距决定
+            height: _flightStops.length * _cardHeight * 0.8,
             color: Color.fromARGB(255, 200, 200, 200),
           ),
         ],
@@ -117,7 +189,7 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
         alignment: Alignment.center,
         children: <Widget>[
           _buildPlane()
-        ],
+        ]..addAll(_flightStops.map(_mapFlightStopToDot)),
       )
     );
   }
