@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import "flight/homepage.dart";
+import "flight2/home_page.dart";
 
 void main() => runApp(new MyApp());
 
@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.red,
       ),
+      debugShowCheckedModeBanner: false,
       home: new HomePage(),
     );
   }

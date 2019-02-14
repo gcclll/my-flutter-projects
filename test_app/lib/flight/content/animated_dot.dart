@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class AnimatedDot extends AnimatedWidget {
 
   final Color color;
+  static final double size = 24.0;
 
   AnimatedDot({
     Key key,
@@ -18,8 +19,8 @@ class AnimatedDot extends AnimatedWidget {
     return Positioned(
       top: animation.value,
       child: Container(
-        height: 24.0,
-        width: 24.0,
+        height: size,
+        width: size,
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
