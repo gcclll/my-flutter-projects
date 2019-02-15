@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './multicity_input.dart';
+import './price_tab/price_tab.dart';
 
 // 这里涉及到 有状态控件的创建
 // 有状态的控件： 在整个应用使用过程中，会与用户发送交互的控件，比如用户输入
@@ -10,6 +11,10 @@ class ContentCard extends StatefulWidget {
 }
 
 class _ContentCardState extends State<ContentCard> {
+
+  // 按钮点击切换时的标识，默认显示输入框，点击之后显示其他的内容(比如：PriceTab)
+  bool showInput = true;
+
   @override
   Widget build(BuildContext context) {
     // 创建一个卡片容纳用户输入控件
@@ -72,7 +77,11 @@ class _ContentCardState extends State<ContentCard> {
           ),
           // 创建一个高度由 child 实际高度决定的 Widget
           child: new IntrinsicHeight(
-            child: _buildMulticityTab(),
+            child: showInput
+              ? _buildMulticityTab()
+              : PriceTab(
+                  height: viewportConstraints.maxHeight - 48.0,
+                ),
           ),
         ),
       ),
@@ -83,14 +92,14 @@ class _ContentCardState extends State<ContentCard> {
   Widget _buildMulticityTab() {
     return Column(
       children: <Widget>[
-//        Text("Inputs"), // TODO 添加用户信息输入框
         new MulticityInput(),
         Expanded(child: Container()),
         // 底部增加了一个图标
         Padding(
           padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
           child: FloatingActionButton(
-            onPressed: () {},
+            // 增加点击事件切换卡片内容
+            onPressed: () => setState(() => showInput = false),
             child: Icon(Icons.timeline, size: 36.0),
           ),
         ),
