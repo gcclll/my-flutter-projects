@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-//import './multicity_input.dart';
+import './multicity_input.dart';
 
 // 这里涉及到 有状态控件的创建
 // 有状态的控件： 在整个应用使用过程中，会与用户发送交互的控件，比如用户输入
@@ -14,7 +14,7 @@ class _ContentCardState extends State<ContentCard> {
   Widget build(BuildContext context) {
     // 创建一个卡片容纳用户输入控件
     return new Card(
-      elevation: 4.0,
+      elevation: 2.0,
       margin: const EdgeInsets.all(8.0),
       child: DefaultTabController(
         length: 3,
@@ -38,8 +38,10 @@ class _ContentCardState extends State<ContentCard> {
   Widget _buildTabBar({bool showFirstOption}) {
     return Stack(
       children: <Widget>[
-        // 数组位置越靠前显示越在上层
         new Positioned.fill(
+          // 设置成 null 那么 Stack 的子控件会被垂直排列，而不是堆叠在一起
+          // 因此可以看到这个 Container 在 TabBar 的下面，如果没设置成 null
+          // Container 是遮挡在 TabBar 上面的
           top: null,
           child: new Container(
             height: 2.0,
@@ -81,7 +83,8 @@ class _ContentCardState extends State<ContentCard> {
   Widget _buildMulticityTab() {
     return Column(
       children: <Widget>[
-        Text("Inputs"), // TODO 添加用户信息输入框
+//        Text("Inputs"), // TODO 添加用户信息输入框
+        new MulticityInput(),
         Expanded(child: Container()),
         // 底部增加了一个图标
         Padding(
