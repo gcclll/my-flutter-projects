@@ -25,6 +25,9 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
   Animation _planeTravelAnimation;
   // 点动画
   AnimationController _dotsAnimationController;
+  // 确认按钮
+  AnimationController _fabAnimationController;
+  Animation _fabAnimation;
 
   // 飞机图标距离底部间隔
   final double _initialPlanePaddingBottom = 16.0;
@@ -65,7 +68,8 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
         alignment: Alignment.center,
         children: <Widget>[_buildPlane()]
           ..addAll(_flightStops.map(_buildStopCard))
-          ..addAll(_flightStops.map(_mapFlightStopToDot)),
+          ..addAll(_flightStops.map(_mapFlightStopToDot))
+          ..add(_buildFab()),
       ),
     );
   }
@@ -81,6 +85,7 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     _flightStops.forEach((stop) =>
       _stopKeys.add(new GlobalKey<FlightStopCardState>())
     );
+    _initFabAnimationController();
     // 触发动画
     _planeSizeAnimationController.forward();
   }
@@ -91,8 +96,22 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     _planeSizeAnimationController.dispose();
     _planeTravelController.dispose();
     _dotsAnimationController.dispose();
+    _fabAnimationController.dispose();
     // 任何动画在不使用了就得释放掉
     super.dispose();
+  }
+
+  Widget _buildFab() {
+    return Positioned(
+      bottom: 16.0,
+      child: ScaleTransition(
+        scale: _fabAnimation,
+        child: FloatingActionButton(
+          onPressed: () {},
+          child: Icon(Icons.check, size: 36.0),
+        ),
+      ),
+    );
   }
 
   Widget _buildStopCard(FlightStop stop) {
@@ -208,7 +227,7 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       duration: Duration(milliseconds: 500)
     )..addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _animateFlightStopCards();
+        _animateFlightStopCards().then((_) => _animateFab());
       }
     });
   }
@@ -256,5 +275,21 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       parent: _planeTravelController,
       curve: Curves.fastOutSlowIn,
     );
+  }
+
+  void _initFabAnimationController() {
+    _fabAnimationController = new AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300)
+    );
+
+    _fabAnimation = new CurvedAnimation(
+      parent: _fabAnimationController,
+      curve: Curves.easeOut
+    );
+  }
+
+  _animateFab() {
+    _fabAnimationController.forward();
   }
 }
