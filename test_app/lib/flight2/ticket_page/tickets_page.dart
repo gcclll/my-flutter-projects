@@ -12,12 +12,29 @@ class TicketsPage extends StatefulWidget {
 class _TicketsPageState extends State<TicketsPage>
   with TickerProviderStateMixin {
 
+  AnimationController _cardEntranceAnimationController;
+  List<Animation> _ticketAnimations;
+  Animation _fabAnimation;
+
   List<FlightStopTicket> stops = [
     new FlightStopTicket("Sahara", "SHE", "Macao", "MAC", "SE2341"),
     new FlightStopTicket("Macao", "MAC", "Cape Verde", "CAP", "KU2342"),
     new FlightStopTicket("Cape Verde", "CAP", "Ireland", "IRE", "KR3452"),
     new FlightStopTicket("Ireland", "IRE", "Sahara", "SHE", "MR4321"),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    initCardAnimations();
+    _cardEntranceAnimationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _cardEntranceAnimationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +57,48 @@ class _TicketsPageState extends State<TicketsPage>
     );
   }
 
+  void initCardAnimations() {
+    _cardEntranceAnimationController = new AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1100),
+    );
+
+    _ticketAnimations = stops.map((stop) {
+      int index = stops.indexOf(stop);
+
+      double start = index * 0.1;
+      double duration = 0.6;
+      double end = duration + start;
+      return new Tween<double>(
+        begin: 800.0,
+        end: 0.0
+      ).animate(
+        new CurvedAnimation(
+          parent: _cardEntranceAnimationController,
+          curve: new Interval(start, end, curve: Curves.decelerate)
+        )
+      );
+    }).toList();
+
+    _fabAnimation = new CurvedAnimation(
+      parent: _cardEntranceAnimationController,
+      curve: Interval(0.7, 1.0, curve: Curves.decelerate)
+    );
+  }
+
   Iterable<Widget> _buildTicket() {
     return stops.map((stop) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-        child: TicketCard(stop: stop),
+      int index = stops.indexOf(stop);
+      return AnimatedBuilder(
+        animation: _cardEntranceAnimationController,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+          child: TicketCard(stop: stop),
+        ),
+        builder: (context, child) => new Transform.translate(
+          offset: Offset(0.0, _ticketAnimations[index].value),
+          child: child,
+        ),
       );
     });
   }
