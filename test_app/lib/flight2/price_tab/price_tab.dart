@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import './animated_plane_icon.dart';
+import './animated_dot.dart';
 
 class PriceTab extends StatefulWidget {
 
@@ -18,11 +21,17 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
   Animation _planeSizeAnimation;
   AnimationController _planeTravelController;
   Animation _planeTravelAnimation;
+  // 点动画
+  AnimationController _dotsAnimationController;
+  Animation _dotsAnimation;
 
   // 飞机图标距离底部间隔
   final double _initialPlanePaddingBottom = 16.0;
   // 飞机最小顶部距离，决定了飞行的终点位置
   final double _minPlanePaddingTop = 16.0;
+
+  final List<int> _flightStops = [ 1, 2, 3, 4 ];
+  List<Animation<double>> _dotPositions = [];
 
   // 飞机顶部间隔 = 当前 widget 高度 - 飞机底部间距 - 飞机大小
   // 这里增加飞行动画之后，值需要根据动画状态发生改变
@@ -45,9 +54,8 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       child: Stack(
         // 将里面的控件都居中排布
         alignment: Alignment.center,
-        children: <Widget>[
-          _buildPlane()
-        ],
+        children: <Widget>[_buildPlane()]
+          ..addAll(_flightStops.map(_mapFlightStopToDot)),
       ),
     );
   }
@@ -58,6 +66,8 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     // 控件状态初始化，动画在这里执行初始化
     _initPlaneSizeAnimations();
     _initPlaneTravelAnimations();
+    _initDotAnimationController();
+    _initDotAnimations();
     // 触发动画
     _planeSizeAnimationController.forward();
   }
@@ -67,6 +77,7 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     // 直接调用动画控制器的释放方法
     _planeSizeAnimationController.dispose();
     _planeTravelController.dispose();
+    _dotsAnimationController.dispose();
     // 任何动画在不使用了就得释放掉
     super.dispose();
   }
@@ -94,6 +105,60 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     );
   }
 
+  Widget _mapFlightStopToDot(stop) {
+    int index = _flightStops.indexOf(stop);
+    bool isStartOrEnd = index == 0 || index == _flightStops.length - 1;
+
+    Color color = isStartOrEnd ? Colors.red : Colors.green;
+
+    return AnimatedDot(
+      animation: _dotPositions[index],
+      color: color,
+    );
+  }
+
+  _initDotAnimations() {
+
+    // 每个点的动画时长
+    final double slideDurationInterval = 0.4;
+    // 每个点的动画间隔
+    final double slideDelayInterval = 0.2;
+    final double height = 0.8 * 80;
+    // 起始位置
+    double startingMarginTop = widget.height;
+    double minMarginTop =
+        _minPlanePaddingTop + _planeSize + 0.5 * height;
+
+    for (int i = 0; i < _flightStops.length; i++) {
+      // 每个点开始动画的时间
+      final start = slideDelayInterval * i;
+      // 每个动画结束时间
+      final end = start + slideDurationInterval;
+
+      double finalMarginTop = minMarginTop + i * height - 20.0;
+
+      Animation<double> animation = new Tween(
+        begin: startingMarginTop,
+        end: finalMarginTop
+      ).animate(
+        new CurvedAnimation(
+          parent: _dotsAnimationController,
+          curve: new Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+
+      _dotPositions.add(animation);
+    }
+  }
+
+  _initDotAnimationController() {
+    _dotsAnimationController = new AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 500)
+    );
+  }
+
+
   // 初始化动画
   _initPlaneSizeAnimations() {
     // 控制器初始化
@@ -107,6 +172,10 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
           Duration(microseconds: 500),
           () => _planeTravelController.forward(),
         );
+
+        Future.delayed(Duration(milliseconds: 700), () {
+          _dotsAnimationController.forward();
+        });
       }
     });
 
