@@ -1,10 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../fade_route.dart';
 import './animated_plane_icon.dart';
 import './animated_dot.dart';
 import './flight_stop.dart';
 import './flight_stop_card.dart';
+import '../ticket_page/tickets_page.dart';
 
 class PriceTab extends StatefulWidget {
 
@@ -107,7 +109,9 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       child: ScaleTransition(
         scale: _fabAnimation,
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () => Navigator.of(context).push(
+            FadeRoute(builder: (context) => TicketsPage())
+          ),
           child: Icon(Icons.check, size: 36.0),
         ),
       ),
