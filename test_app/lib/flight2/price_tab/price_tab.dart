@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import './animated_plane_icon.dart';
 import './animated_dot.dart';
+import './flight_stop.dart';
+import './flight_stop_card.dart';
 
 class PriceTab extends StatefulWidget {
 
@@ -23,14 +25,21 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
   Animation _planeTravelAnimation;
   // 点动画
   AnimationController _dotsAnimationController;
-  Animation _dotsAnimation;
 
   // 飞机图标距离底部间隔
   final double _initialPlanePaddingBottom = 16.0;
   // 飞机最小顶部距离，决定了飞行的终点位置
   final double _minPlanePaddingTop = 16.0;
 
-  final List<int> _flightStops = [ 1, 2, 3, 4 ];
+
+  // flight stop card
+  final List<FlightStop> _flightStops = [
+    FlightStop("JFK", "ORY", "JUN 05", "6h 25m", "\$851", "9:26 am - 3:43 pm"),
+    FlightStop("MRG", "FTB", "JUN 20", "6h 25m", "\$532", "9:26 am - 3:43 pm"),
+    FlightStop("ERT", "TVS", "JUN 20", "6h 25m", "\$718", "9:26 am - 3:43 pm"),
+    FlightStop("KKR", "RTY", "JUN 20", "6h 25m", "\$663", "9:26 am - 3:43 pm"),
+  ];
+  final List<GlobalKey<FlightStopCardState>> _stopKeys = [];
   List<Animation<double>> _dotPositions = [];
 
   // 飞机顶部间隔 = 当前 widget 高度 - 飞机底部间距 - 飞机大小
@@ -55,6 +64,7 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
         // 将里面的控件都居中排布
         alignment: Alignment.center,
         children: <Widget>[_buildPlane()]
+          ..addAll(_flightStops.map(_buildStopCard))
           ..addAll(_flightStops.map(_mapFlightStopToDot)),
       ),
     );
@@ -68,6 +78,9 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     _initPlaneTravelAnimations();
     _initDotAnimationController();
     _initDotAnimations();
+    _flightStops.forEach((stop) =>
+      _stopKeys.add(new GlobalKey<FlightStopCardState>())
+    );
     // 触发动画
     _planeSizeAnimationController.forward();
   }
@@ -80,6 +93,35 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     _dotsAnimationController.dispose();
     // 任何动画在不使用了就得释放掉
     super.dispose();
+  }
+
+  Widget _buildStopCard(FlightStop stop) {
+    int index = _flightStops.indexOf(stop);
+    double topMargin = _dotPositions[index].value -
+      0.5 * (FlightStopCard.height - AnimatedDot.size);
+    bool isLeft = index.isOdd;
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: EdgeInsets.only(top: topMargin),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            isLeft ? Container() : Expanded(child: Container()),
+            Expanded(
+              child: FlightStopCard(
+                key: _stopKeys[index],
+                flightStop: stop,
+                isLeft: isLeft,
+              ),
+            ),
+            !isLeft ? Container() : Expanded(child: Container()),
+          ],
+        ),
+      ),
+    );
   }
 
   // 返回带动画的空间
@@ -115,6 +157,15 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
       animation: _dotPositions[index],
       color: color,
     );
+  }
+
+  Future _animateFlightStopCards() async {
+    return Future.forEach(_stopKeys, (GlobalKey<FlightStopCardState> stopKey) {
+      return new Future.delayed(Duration(milliseconds: 250), () {
+        // 通过 key 去获取状态启动动画
+        stopKey.currentState.runAnimation();
+      });
+    });
   }
 
   _initDotAnimations() {
@@ -155,7 +206,11 @@ class _PriceTabState extends State<PriceTab> with TickerProviderStateMixin {
     _dotsAnimationController = new AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 500)
-    );
+    )..addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _animateFlightStopCards();
+      }
+    });
   }
 
 
