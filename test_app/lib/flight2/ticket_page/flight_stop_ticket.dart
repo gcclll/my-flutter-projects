@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class FlightStopTicket {
   String from; // 出发点
   String fromShort; // 出发地简称
@@ -14,4 +12,14 @@ class FlightStopTicket {
     this.toShort,
     this.flightNumber
   );
+
+  factory FlightStopTicket.fromJson(Map<String, dynamic> json) {
+    return FlightStopTicket(
+      json['from'],
+      json['fromShort'],
+      json['to'],
+      json['toShort'],
+      json['flightNumber'],
+    );
+  }
 }

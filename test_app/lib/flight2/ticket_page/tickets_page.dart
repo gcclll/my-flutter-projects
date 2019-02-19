@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import '../services/fetch_apis.dart';
 import './flight_stop_ticket.dart';
 import './ticket_card.dart';
 import '../air_asia_bar.dart';
@@ -16,16 +20,16 @@ class _TicketsPageState extends State<TicketsPage>
   List<Animation> _ticketAnimations;
   Animation _fabAnimation;
 
-  List<FlightStopTicket> stops = [
-    new FlightStopTicket("Sahara", "SHE", "Macao", "MAC", "SE2341"),
-    new FlightStopTicket("Macao", "MAC", "Cape Verde", "CAP", "KU2342"),
-    new FlightStopTicket("Cape Verde", "CAP", "Ireland", "IRE", "KR3452"),
-    new FlightStopTicket("Ireland", "IRE", "Sahara", "SHE", "MR4321"),
-  ];
+  Future<List<FlightStopTicket>> _post;
+  List<FlightStopTicket> stops;
 
   @override
   void initState() {
     super.initState();
+    _post = fetchTicket();
+  }
+
+  void _initAnimation() {
     initCardAnimations();
     _cardEntranceAnimationController.forward();
   }
@@ -34,6 +38,25 @@ class _TicketsPageState extends State<TicketsPage>
   void dispose() {
     _cardEntranceAnimationController.dispose();
     super.dispose();
+  }
+
+  FutureBuilder _buildFutureTicket() {
+    return FutureBuilder<List<FlightStopTicket>>(
+      future: _post,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          stops = snapshot.data;
+          _initAnimation();
+          return new Column(
+            children: _buildTicket().toList(),
+          );
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+
+        return CircularProgressIndicator();
+      },
+    );
   }
 
   @override
@@ -45,9 +68,7 @@ class _TicketsPageState extends State<TicketsPage>
           Positioned.fill(
             top: MediaQuery.of(context).padding.top + 64.0,
             child: SingleChildScrollView(
-              child: new Column(
-                children: _buildTicket().toList(),
-              ),
+              child: _buildFutureTicket(),
             ),
           ),
         ],
@@ -66,7 +87,7 @@ class _TicketsPageState extends State<TicketsPage>
     _ticketAnimations = stops.map((stop) {
       int index = stops.indexOf(stop);
 
-      double start = index * 0.1;
+      double start = (index % 4) * 0.1;
       double duration = 0.6;
       double end = duration + start;
       return new Tween<double>(
@@ -75,6 +96,7 @@ class _TicketsPageState extends State<TicketsPage>
       ).animate(
         new CurvedAnimation(
           parent: _cardEntranceAnimationController,
+//          curve: Curves.easeIn,
           curve: new Interval(start, end, curve: Curves.decelerate)
         )
       );
