@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:test_app/flight2/ticket_page/flight_stop_ticket.dart';
+import 'package:test_app/flight2/price_tab/flight_stop.dart';
 
 HttpClient hc = new HttpClient();
 
@@ -18,6 +19,31 @@ Future _get(String path) async {
   }
 
   return resBody;
+}
+
+Future<List<FlightStop>> fetchStops() async {
+  try {
+    var response = await _get('/stops');
+    List result = response['data'].toList();
+    List<FlightStop> stops = [];
+
+    for (int i = 0; i < result.length; i++) {
+      var item = result[i];
+      stops.add(new FlightStop(
+        item['from'],
+        item['to'],
+        item['date'],
+        item['duration'],
+        item['price'],
+        item['fromToTime']
+      ));
+    }
+
+    return stops;
+  } catch (e) {
+    print(e);
+    return [];
+  }
 }
 
 Future<List<FlightStopTicket>> fetchTicket() async {
